@@ -56,6 +56,44 @@
       padding: 24px;
     }
 
+    .book-rail {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    .book-rail img {
+      width: 110px;
+      border-radius: 6px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .book-rail.left {
+      left: 24px;
+    }
+
+    .book-rail.right {
+      right: 24px;
+    }
+
+    @media (max-width: 1100px) {
+      .book-rail { display:none; }
+    }
+
+    .shell {
+      position: relative;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
     .card {
       position: relative;
       width: min(920px, 100%);
@@ -274,6 +312,16 @@
 <body>
   <div class="storm"></div>
   <div class="shell">
+    <div class="book-rail left">
+      <img src="https://covers.openlibrary.org/b/isbn/9780765326355-L.jpg" alt="The Way of Kings">
+      <img src="https://covers.openlibrary.org/b/isbn/9780765326362-L.jpg" alt="Words of Radiance">
+    </div>
+
+    <div class="book-rail right">
+      <img src="https://covers.openlibrary.org/b/isbn/9780765326379-L.jpg" alt="Oathbringer">
+      <img src="https://covers.openlibrary.org/b/isbn/9780765326386-L.jpg" alt="Rhythm of War">
+      <img src="https://covers.openlibrary.org/b/isbn/9781250319180-L.jpg" alt="Wind and Truth">
+    </div>
     <section class="card">
       <svg class="glyph" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <circle cx="300" cy="300" r="180" stroke="rgba(143,212,255,0.38)" stroke-width="2"/>
