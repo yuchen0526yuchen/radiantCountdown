@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Radiant 下班倒數</title>
+  <style>
+    :root {
+      --bg-1: #07111d;
+      --bg-2: #0d2133;
+      --panel: rgba(10, 20, 34, 0.78);
+      --line: rgba(151, 204, 255, 0.22);
+      --line-strong: rgba(255, 214, 134, 0.42);
+      --text: #eef5ff;
+      --muted: #9fb6ce;
+      --accent: #8fd4ff;
+      --accent-2: #ffd788;
+      --danger: #ff9f9f;
+      --shadow: 0 18px 60px rgba(0, 0, 0, 0.42);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Noto Sans TC", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% 18%, rgba(143, 212, 255, 0.12), transparent 30%),
+        radial-gradient(circle at 50% 82%, rgba(255, 215, 136, 0.08), transparent 26%),
+        linear-gradient(180deg, var(--bg-2), var(--bg-1));
+      overflow: hidden;
+    }
+
+    .storm {
+      position: fixed;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          115deg,
+          rgba(255,255,255,0.0) 0 24px,
+          rgba(255,255,255,0.018) 24px 26px,
+          rgba(255,255,255,0.0) 26px 56px
+        );
+      opacity: 0.35;
+      animation: drift 20s linear infinite;
+      pointer-events: none;
+    }
+
+    .shell {
+      position: relative;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .card {
+      position: relative;
+      width: min(920px, 100%);
+      padding: 32px 28px 24px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(15, 29, 48, 0.9), var(--panel));
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card::before,
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border: 1px solid rgba(255, 215, 136, 0.10);
+      border-radius: 22px;
+      pointer-events: none;
+    }
+
+    .glyph {
+      position: absolute;
+      inset: auto 50% 20px auto;
+      transform: translateX(50%);
+      width: min(520px, 72vw);
+      height: min(520px, 72vw);
+      opacity: 0.14;
+      pointer-events: none;
+      filter: drop-shadow(0 0 18px rgba(143, 212, 255, 0.12));
+    }
+
+    .header {
+      position: relative;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .kicker {
+      font-size: 12px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--accent-2);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 5vw, 52px);
+      letter-spacing: 0.04em;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      margin: 12px auto 0;
+      max-width: 700px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .countdown {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 28px 0;
+    }
+
+    .unit {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 24px 16px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .unit::before {
+      content: "";
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      top: 10px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--line-strong), transparent);
+    }
+
+    .value {
+      font-size: clamp(40px, 8vw, 78px);
+      line-height: 1;
+      font-weight: 800;
+      color: var(--text);
+      text-shadow: 0 0 24px rgba(143, 212, 255, 0.16);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .label {
+      margin-top: 10px;
+      font-size: 13px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--accent-2);
+    }
+
+    .controls {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: end;
+      margin-top: 8px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    input[type="time"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(5, 12, 22, 0.7);
+      color: var(--text);
+      padding: 14px 16px;
+      font-size: 18px;
+      outline: none;
+    }
+
+    input[type="time"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(143, 212, 255, 0.10);
+    }
+
+    button {
+      border: 1px solid var(--line-strong);
+      border-radius: 16px;
+      padding: 14px 18px;
+      background: linear-gradient(180deg, rgba(255, 215, 136, 0.18), rgba(255, 215, 136, 0.08));
+      color: var(--text);
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.24);
+    }
+
+    .status {
+      margin-top: 16px;
+      min-height: 24px;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .status.done { color: var(--accent-2); }
+    .status.warn { color: var(--danger); }
+
+    .footer {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 12px;
+      color: rgba(159, 182, 206, 0.72);
+      letter-spacing: 0.04em;
+    }
+
+    @keyframes drift {
+      from { transform: translateX(-3%) translateY(-2%); }
+      50% { transform: translateX(3%) translateY(2%); }
+      to { transform: translateX(-3%) translateY(-2%); }
+    }
+
+    @media (max-width: 680px) {
+      .card { padding: 24px 18px 20px; }
+      .countdown { grid-template-columns: 1fr; }
+      .controls { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="storm"></div>
+  <div class="shell">
+    <section class="card">
+      <svg class="glyph" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="300" cy="300" r="180" stroke="rgba(143,212,255,0.38)" stroke-width="2"/>
+        <circle cx="300" cy="300" r="120" stroke="rgba(255,215,136,0.36)" stroke-width="2"/>
+        <circle cx="300" cy="300" r="56" stroke="rgba(143,212,255,0.38)" stroke-width="2"/>
+        <path d="M300 82V212M300 388V518M82 300H212M388 300H518" stroke="rgba(255,215,136,0.42)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M158 158L244 244M356 356L442 442M442 158L356 244M244 356L158 442" stroke="rgba(143,212,255,0.36)" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M300 140C326 180 352 198 406 204C362 228 338 250 300 300C262 250 238 228 194 204C248 198 274 180 300 140Z" stroke="rgba(255,215,136,0.44)" stroke-width="3"/>
+        <path d="M300 460C274 420 248 402 194 396C238 372 262 350 300 300C338 350 362 372 406 396C352 402 326 420 300 460Z" stroke="rgba(255,215,136,0.44)" stroke-width="3"/>
+        <path d="M140 300C180 274 198 248 204 194C228 238 250 262 300 300C250 338 228 362 204 406C198 352 180 326 140 300Z" stroke="rgba(143,212,255,0.44)" stroke-width="3"/>
+        <path d="M460 300C420 326 402 352 396 406C372 362 350 338 300 300C350 262 372 238 396 194C402 248 420 274 460 300Z" stroke="rgba(143,212,255,0.44)" stroke-width="3"/>
+        <circle cx="300" cy="300" r="12" fill="rgba(255,215,136,0.68)"/>
+      </svg>
+
+      <div class="header">
+        <div class="kicker">Journey Before Destination</div>
+        <h1>Radiant 下班倒數</h1>
+        <p class="subtitle">計算從現在到下班時間還剩幾小時、幾分、幾秒。預設會記住你上次設定的下班時間，重新開頁也會保留。</p>
+      </div>
+
+      <div class="countdown" aria-live="polite">
+        <div class="unit">
+          <div class="value" id="hours">00</div>
+          <div class="label">Hours</div>
+        </div>
+        <div class="unit">
+          <div class="value" id="minutes">00</div>
+          <div class="label">Minutes</div>
+        </div>
+        <div class="unit">
+          <div class="value" id="seconds">00</div>
+          <div class="label">Seconds</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="field">
+          <label for="offworkTime">下班時間</label>
+          <input id="offworkTime" type="time" step="1" value="18:00:00" />
+        </div>
+        <button id="saveBtn" type="button">更新時間</button>
+      </div>
+
+      <div class="status" id="status"></div>
+      <div class="footer">純前端單頁，不需後端；適合直接存成 HTML 開啟。</div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'radiant-offwork-time';
+    const timeInput = document.getElementById('offworkTime');
+    const saveBtn = document.getElementById('saveBtn');
+    const hoursEl = document.getElementById('hours');
+    const minutesEl = document.getElementById('minutes');
+    const secondsEl = document.getElementById('seconds');
+    const statusEl = document.getElementById('status');
+
+    function pad(value) {
+      return String(value).padStart(2, '0');
+    }
+
+    function readStoredTime() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) timeInput.value = saved;
+    }
+
+    function saveTime() {
+      if (!timeInput.value) {
+        statusEl.textContent = '請先輸入有效的下班時間。';
+        statusEl.className = 'status warn';
+        return;
+      }
+      localStorage.setItem(STORAGE_KEY, timeInput.value);
+      statusEl.textContent = `已更新下班時間：${timeInput.value}`;
+      statusEl.className = 'status';
+      updateCountdown();
+    }
+
+    function getTargetDate() {
+      const now = new Date();
+      const [h = '18', m = '00', s = '00'] = (timeInput.value || '18:00:00').split(':');
+      const target = new Date(now);
+      target.setHours(Number(h), Number(m), Number(s), 0);
+      return { now, target };
+    }
+
+    function updateCountdown() {
+      const { now, target } = getTargetDate();
+      let diff = target.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        hoursEl.textContent = '00';
+        minutesEl.textContent = '00';
+        secondsEl.textContent = '00';
+        statusEl.textContent = '已到下班時間，今天可以收工了。';
+        statusEl.className = 'status done';
+        return;
+      }
+
+      const totalSeconds = Math.floor(diff / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      hoursEl.textContent = pad(hours);
+      minutesEl.textContent = pad(minutes);
+      secondsEl.textContent = pad(seconds);
+
+      const localeNow = now.toLocaleTimeString('zh-TW', { hour12: false });
+      statusEl.textContent = `目前時間 ${localeNow}，距離下班還有 ${hours} 小時 ${minutes} 分 ${seconds} 秒。`;
+      statusEl.className = 'status';
+    }
+
+    saveBtn.addEventListener('click', saveTime);
+    timeInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') saveTime();
+    });
+    timeInput.addEventListener('change', saveTime);
+
+    readStoredTime();
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>
