@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Radiant 下班倒數</title>
+  <title>下班倒數</title>
   <style>
     :root {
       --bg-1: #07111d;
@@ -116,6 +116,31 @@
       color: var(--muted);
       line-height: 1.7;
       font-size: 15px;
+    }
+
+    .oath-box {
+      margin: 0 auto 18px;
+      max-width: 760px;
+      padding: 16px 18px;
+      border: 1px solid rgba(255, 215, 136, 0.22);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255, 215, 136, 0.08), rgba(143, 212, 255, 0.04));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .oath-label {
+      margin-bottom: 8px;
+      font-size: 11px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--accent-2);
+    }
+
+    .oath-text {
+      font-size: clamp(15px, 2vw, 20px);
+      line-height: 1.8;
+      color: var(--text);
+      text-shadow: 0 0 18px rgba(143, 212, 255, 0.10);
     }
 
     .countdown {
@@ -264,8 +289,12 @@
       </svg>
 
       <div class="header">
+        <div class="oath-box" id="oathBox">
+          <div class="oath-label">Immortal Words</div>
+          <div class="oath-text" id="oathText"></div>
+        </div>
         <div class="kicker">Journey Before Destination</div>
-        <h1>Radiant 下班倒數</h1>
+        <h1>下班倒數</h1>
         <p class="subtitle">計算從現在到下班時間還剩幾小時、幾分、幾秒。預設會記住你上次設定的下班時間，重新開頁也會保留。</p>
       </div>
 
@@ -298,12 +327,29 @@
 
   <script>
     const STORAGE_KEY = 'radiant-offwork-time';
+    const IMMORTAL_WORDS = [
+      'Life before death. Strength before weakness. Journey before destination.',
+      'I will protect those who cannot protect themselves.',
+      'I will protect even those I hate, so long as it is right.',
+      'I will remember those who have been forgotten.',
+      'I will listen to those who have been ignored.',
+      'I will seek self-mastery.',
+      'I will unite instead of divide. I will bring men together.',
+      'Sometimes a hypocrite is nothing more than a man in the process of changing.',
+      'The most important step a person can take is always the next one.'
+    ];
     const timeInput = document.getElementById('offworkTime');
     const saveBtn = document.getElementById('saveBtn');
     const hoursEl = document.getElementById('hours');
     const minutesEl = document.getElementById('minutes');
     const secondsEl = document.getElementById('seconds');
     const statusEl = document.getElementById('status');
+    const oathTextEl = document.getElementById('oathText');
+
+    function pickRandomOath() {
+      const index = Math.floor(Math.random() * IMMORTAL_WORDS.length);
+      oathTextEl.textContent = `“${IMMORTAL_WORDS[index]}”`;
+    }
 
     function pad(value) {
       return String(value).padStart(2, '0');
@@ -367,6 +413,7 @@
     });
     timeInput.addEventListener('change', saveTime);
 
+    pickRandomOath();
     readStoredTime();
     updateCountdown();
     setInterval(updateCountdown, 1000);
